@@ -1,5 +1,3 @@
-# EAS Build configuration for the mobile app
-# Docs: https://docs.expo.dev/build/eas-json/
 {
   "cli": {
     "version": ">= 15.0.0",
