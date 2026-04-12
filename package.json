@@ -1,0 +1,18 @@
+{
+  "name": "mfm-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "frontend",
+    "mobile-app"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=frontend",
+    "dev:mobile": "npm run start --workspace=mobile-app",
+    "build:web": "npm run build --workspace=frontend",
+    "build:shared": "npm run build --workspace=@mfm/shared",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  }
+}

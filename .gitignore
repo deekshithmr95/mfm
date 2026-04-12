@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Next.js
+frontend/.next/
+frontend/.swc/
+frontend/out/
+
+# Expo / React Native
+mobile-app/.expo/
+mobile-app/dist/
+
+# Build output
+dist/
+bin/
+*.tsbuildinfo
+
+# Testing
+frontend/playwright-report/
+frontend/test-results/
+frontend/coverage/
+
+# Env files
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# AWS / Serverless
+backend/.serverless/
+
+# Go
+backend/test_out.txt

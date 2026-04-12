@@ -1,0 +1,60 @@
+# ──────────────────────────────────────────────────────────────────
+# MFM Web Frontend — Production Dockerfile (multi-stage)
+# Works with the monorepo structure: builds @mfm/shared inline
+# ──────────────────────────────────────────────────────────────────
+
+# ── Stage 1: Install dependencies ────────────────────────────────
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Copy root workspace files
+COPY package.json package-lock.json ./
+
+# Copy workspace package.json files (needed for npm ci --workspaces)
+COPY packages/shared/package.json ./packages/shared/
+COPY frontend/package.json ./frontend/
+
+# Install only production + workspace dependencies
+RUN npm ci --include=dev
+
+# ── Stage 2: Build ───────────────────────────────────────────────
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy deps from previous stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules 2>/dev/null || true
+COPY --from=deps /app/frontend/node_modules ./frontend/node_modules 2>/dev/null || true
+
+# Copy source code
+COPY package.json package-lock.json ./
+COPY packages/shared/ ./packages/shared/
+COPY frontend/ ./frontend/
+
+# Build Next.js app (transpilePackages handles @mfm/shared)
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build --workspace=frontend
+
+# ── Stage 3: Production runner ───────────────────────────────────
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy the standalone output
+COPY --from=builder /app/frontend/.next/standalone ./
+COPY --from=builder /app/frontend/.next/static ./frontend/.next/static
+COPY --from=builder /app/frontend/public ./frontend/public
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "frontend/server.js"]

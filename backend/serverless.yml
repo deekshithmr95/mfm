@@ -1,0 +1,63 @@
+service: farmers-marketplace
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: provided.al2
+  architecture: arm64
+  region: us-east-1
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${sls:stage}
+    AUTH_MODE: mock
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+
+functions:
+  api:
+    handler: bootstrap
+    events:
+      - httpApi:
+          path: /api/{proxy+}
+          method: '*'
+      - httpApi:
+          path: /api/health
+          method: GET
+      - httpApi:
+          path: /api/about
+          method: GET
+      - httpApi:
+          path: /api/about
+          method: PUT
+      - httpApi:
+          path: /api/products/search
+          method: GET
+
+resources:
+  Resources:
+    MarketplaceTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
