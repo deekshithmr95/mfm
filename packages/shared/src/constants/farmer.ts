@@ -19,8 +19,8 @@ export interface FarmerOrder {
 }
 
 export const AVAILABLE_IMAGES = [
-  { label: 'Honey Jar', value: 'https://images.unsplash.com/photo-1587049352847-4d4b1ed74dd4?auto=format&fit=crop&q=80&w=400' },
-  { label: 'Tomatoes', value: 'https://images.unsplash.com/photo-1592924357228-91a5daadcfea?auto=format&fit=crop&q=80&w=400' },
+  { label: 'Honey Jar', value: 'https://placehold.co/400x400/FFF8E7/B8860B?text=Honey+Jar' },
+  { label: 'Tomatoes', value: 'https://placehold.co/400x400/FFE4E1/DC143C?text=Tomatoes' },
   { label: 'Eggs', value: 'https://images.unsplash.com/photo-1587486913049-53fc88980cfc?auto=format&fit=crop&q=80&w=400' },
   { label: 'Jaggery', value: 'https://images.unsplash.com/photo-1579294860002-3920973a0050?auto=format&fit=crop&q=80&w=400' },
   { label: 'Coconut Oil', value: 'https://images.unsplash.com/photo-1621236378699-8597faf6a176?auto=format&fit=crop&q=80&w=400' },
@@ -28,9 +28,9 @@ export const AVAILABLE_IMAGES = [
 ];
 
 export const INITIAL_FARMER_LISTINGS: Product[] = [
-  { id: 101, name: 'Heirloom Tomatoes', farmer: 'My Farm', farmerId: 'me', image: 'https://images.unsplash.com/photo-1592924357228-91a5daadcfea?auto=format&fit=crop&q=80&w=400', originalPrice: 120, offerPrice: 89, discountPercent: 26, stock: 45, category: 'Vegetables', unit: '1 kg', description: 'Vine-ripened heirloom tomatoes.' },
+  { id: 101, name: 'Heirloom Tomatoes', farmer: 'My Farm', farmerId: 'me', image: 'https://placehold.co/400x400/FFE4E1/DC143C?text=Tomatoes', originalPrice: 120, offerPrice: 89, discountPercent: 26, stock: 45, category: 'Vegetables', unit: '1 kg', description: 'Vine-ripened heirloom tomatoes.' },
   { id: 102, name: 'Farm Fresh Eggs', farmer: 'My Farm', farmerId: 'me', image: 'https://images.unsplash.com/photo-1587486913049-53fc88980cfc?auto=format&fit=crop&q=80&w=400', originalPrice: 180, offerPrice: 149, discountPercent: 17, stock: 30, category: 'Dairy & Eggs', unit: '12 pcs', description: 'Free-range eggs.' },
-  { id: 103, name: 'Organic Spinach', farmer: 'My Farm', farmerId: 'me', image: 'https://images.unsplash.com/photo-1592924357228-91a5daadcfea?auto=format&fit=crop&q=80&w=400', originalPrice: 45, offerPrice: 35, discountPercent: 22, stock: 20, category: 'Vegetables', unit: '500g', description: 'Fresh organic spinach.' },
+  { id: 103, name: 'Organic Spinach', farmer: 'My Farm', farmerId: 'me', image: 'https://placehold.co/400x400/FFE4E1/DC143C?text=Tomatoes', originalPrice: 45, offerPrice: 35, discountPercent: 22, stock: 20, category: 'Vegetables', unit: '500g', description: 'Fresh organic spinach.' },
   { id: 104, name: 'Green Chillies', farmer: 'My Farm', farmerId: 'me', image: 'https://images.unsplash.com/photo-1615485500710-aa71300612ee?auto=format&fit=crop&q=80&w=400', originalPrice: 30, offerPrice: 25, discountPercent: 17, stock: 0, category: 'Vegetables', unit: '250g', description: 'Hot green chillies.' },
 ];
 
