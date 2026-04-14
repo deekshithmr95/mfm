@@ -2,26 +2,26 @@ package models
 
 // AboutValue represents a single company value displayed on the About Us page
 type AboutValue struct {
-	Icon        string `json:"icon" dynamodbav:"icon"`
-	Title       string `json:"title" dynamodbav:"title"`
-	Description string `json:"description" dynamodbav:"description"`
+	Icon        string `json:"icon" firestore:"icon"`
+	Title       string `json:"title" firestore:"title"`
+	Description string `json:"description" firestore:"description"`
 }
 
 // TeamMember represents a team member displayed on the About Us page
 type TeamMember struct {
-	Name string `json:"name" dynamodbav:"name"`
-	Role string `json:"role" dynamodbav:"role"`
-	Bio  string `json:"bio" dynamodbav:"bio"`
+	Name string `json:"name" firestore:"name"`
+	Role string `json:"role" firestore:"role"`
+	Bio  string `json:"bio" firestore:"bio"`
 }
 
 // AboutUsContent is the admin-customizable content for the About Us page
 type AboutUsContent struct {
-	HeroTitle    string       `json:"heroTitle" dynamodbav:"heroTitle"`
-	HeroSubtitle string       `json:"heroSubtitle" dynamodbav:"heroSubtitle"`
-	Mission      string       `json:"mission" dynamodbav:"mission"`
-	Story        string       `json:"story" dynamodbav:"story"`
-	Values       []AboutValue `json:"values" dynamodbav:"values"`
-	TeamMembers  []TeamMember `json:"teamMembers" dynamodbav:"teamMembers"`
+	HeroTitle    string       `json:"heroTitle" firestore:"heroTitle"`
+	HeroSubtitle string       `json:"heroSubtitle" firestore:"heroSubtitle"`
+	Mission      string       `json:"mission" firestore:"mission"`
+	Story        string       `json:"story" firestore:"story"`
+	Values       []AboutValue `json:"values" firestore:"values"`
+	TeamMembers  []TeamMember `json:"teamMembers" firestore:"teamMembers"`
 }
 
 // DefaultAboutUsContent returns the default content for a fresh deployment

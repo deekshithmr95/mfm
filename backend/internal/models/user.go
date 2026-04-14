@@ -3,16 +3,16 @@ package models
 import "time"
 
 type User struct {
-	ID        string `json:"id" dynamodbav:"id"`
-	Name      string `json:"name" dynamodbav:"name"`
-	Email     string `json:"email" dynamodbav:"email"`
-	Phone     string `json:"phone" dynamodbav:"phone"`
-	Role      string `json:"role" dynamodbav:"role"` // farmer | consumer | admin
-	Farm      string `json:"farm,omitempty" dynamodbav:"farm,omitempty"`
-	Location  string `json:"location,omitempty" dynamodbav:"location,omitempty"`
-	Status    string `json:"status" dynamodbav:"status"` // active | suspended | pending_onboard
-	CreatedAt string `json:"createdAt" dynamodbav:"createdAt"`
-	Notes     string `json:"notes,omitempty" dynamodbav:"notes,omitempty"` // Admin support notes
+	ID        string `json:"id" firestore:"id"`
+	Name      string `json:"name" firestore:"name"`
+	Email     string `json:"email" firestore:"email"`
+	Phone     string `json:"phone" firestore:"phone"`
+	Role      string `json:"role" firestore:"role"` // farmer | consumer | admin
+	Farm      string `json:"farm,omitempty" firestore:"farm,omitempty"`
+	Location  string `json:"location,omitempty" firestore:"location,omitempty"`
+	Status    string `json:"status" firestore:"status"` // active | suspended | pending_onboard
+	CreatedAt string `json:"createdAt" firestore:"createdAt"`
+	Notes     string `json:"notes,omitempty" firestore:"notes,omitempty"` // Admin support notes
 }
 
 func NewUser(id, name, email, role string) User {

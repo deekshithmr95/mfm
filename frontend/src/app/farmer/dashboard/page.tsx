@@ -2,6 +2,7 @@
 
 import styles from './dashboard.module.css';
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFarmerStore, AVAILABLE_IMAGES, FarmerOrder } from '@/store/useFarmerStore';
@@ -106,7 +107,7 @@ function ProductFormModal({
                   className={`${styles.imagePick} ${image === img.value ? styles.imagePickActive : ''}`}
                   onClick={() => setImage(img.value)}
                 >
-                  <img src={img.value} alt={img.label} />
+                  <Image src={img.value} alt={img.label} width={60} height={60} style={{ objectFit: 'cover' }} />
                   <span>{img.label}</span>
                 </button>
               ))}

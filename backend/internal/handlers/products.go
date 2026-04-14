@@ -1,141 +1,168 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
 	"farmers-marketplace-backend/internal/db"
 	"farmers-marketplace-backend/internal/middleware"
 	"farmers-marketplace-backend/internal/models"
-
-	"github.com/aws/aws-lambda-go/events"
 )
 
-type Response = events.APIGatewayProxyResponse
-
 // ListProducts handles GET /api/products
-func ListProducts(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	category := request.QueryStringParameters["category"]
+func ListProducts(w http.ResponseWriter, r *http.Request) {
+	category := r.URL.Query().Get("category")
 
-	products, err := db.ListProducts(ctx, category)
+	products, err := db.ListProducts(r.Context(), category)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to list products: "+err.Error())
+		errorResponse(w, http.StatusInternalServerError, "Failed to list products: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, products)
+	jsonResponse(w, http.StatusOK, products)
 }
 
 // SearchProducts handles GET /api/products/search?q=...&sort=...&category=...
-func SearchProducts(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	query := request.QueryStringParameters["q"]
-	sortBy := request.QueryStringParameters["sort"]
-	category := request.QueryStringParameters["category"]
+func SearchProducts(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	sortBy := r.URL.Query().Get("sort")
+	category := r.URL.Query().Get("category")
 
-	products, err := db.SearchProducts(ctx, query, category, sortBy)
+	products, err := db.SearchProducts(r.Context(), query, category, sortBy)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, "Search failed: "+err.Error())
+		errorResponse(w, http.StatusInternalServerError, "Search failed: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, products)
+	jsonResponse(w, http.StatusOK, products)
 }
 
 // GetProduct handles GET /api/products/{id}
-func GetProduct(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	id := extractPathParam(request.Path, "/api/products/")
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+	id := extractPathParam(r.URL.Path, "/api/products/")
 
-	product, err := db.GetProduct(ctx, id)
+	product, err := db.GetProduct(r.Context(), id)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, err.Error())
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	if product == nil {
-		return errorResponse(http.StatusNotFound, "Product not found")
+		errorResponse(w, http.StatusNotFound, "Product not found")
+		return
 	}
 
-	return jsonResponse(http.StatusOK, product)
+	jsonResponse(w, http.StatusOK, product)
 }
 
 // CreateProduct handles POST /api/products
-func CreateProduct(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	user, ok := middleware.RequireRole(request, "farmer")
+func CreateProduct(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.RequireRole(r, "farmer")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Only farmers can create products")
+		errorResponse(w, http.StatusForbidden, "Only farmers can create products")
+		return
 	}
 
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
 	var input models.CreateProductInput
-	if err := json.Unmarshal([]byte(request.Body), &input); err != nil {
-		return errorResponse(http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &input); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
 	}
 
 	if input.Name == "" {
-		return errorResponse(http.StatusBadRequest, "Product name is required")
+		errorResponse(w, http.StatusBadRequest, "Product name is required")
+		return
 	}
 
 	product := models.NewProduct(input, user.UserID, user.Farm)
 
-	created, err := db.PutProduct(ctx, product)
+	created, err := db.PutProduct(r.Context(), product)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to create product: "+err.Error())
+		errorResponse(w, http.StatusInternalServerError, "Failed to create product: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusCreated, created)
+	jsonResponse(w, http.StatusCreated, created)
 }
 
 // UpdateProduct handles PUT /api/products/{id}
-func UpdateProduct(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	user, ok := middleware.RequireRole(request, "farmer")
+func UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.RequireRole(r, "farmer")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Only farmers can update products")
+		errorResponse(w, http.StatusForbidden, "Only farmers can update products")
+		return
 	}
 
-	id := extractPathParam(request.Path, "/api/products/")
+	id := extractPathParam(r.URL.Path, "/api/products/")
 
 	// Verify ownership
-	product, err := db.GetProduct(ctx, id)
+	product, err := db.GetProduct(r.Context(), id)
 	if err != nil || product == nil {
-		return errorResponse(http.StatusNotFound, "Product not found")
+		errorResponse(w, http.StatusNotFound, "Product not found")
+		return
 	}
 	if product.FarmerID != user.UserID {
-		return errorResponse(http.StatusForbidden, "You can only update your own products")
+		errorResponse(w, http.StatusForbidden, "You can only update your own products")
+		return
 	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
 
 	var input models.UpdateProductInput
-	if err := json.Unmarshal([]byte(request.Body), &input); err != nil {
-		return errorResponse(http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &input); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
 	}
 
-	updated, err := db.UpdateProduct(ctx, id, input)
+	updated, err := db.UpdateProduct(r.Context(), id, input)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to update product: "+err.Error())
+		errorResponse(w, http.StatusInternalServerError, "Failed to update product: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, updated)
+	jsonResponse(w, http.StatusOK, updated)
 }
 
 // DeleteProduct handles DELETE /api/products/{id}
-func DeleteProduct(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	user, ok := middleware.RequireRole(request, "farmer")
+func DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.RequireRole(r, "farmer")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Only farmers can delete products")
+		errorResponse(w, http.StatusForbidden, "Only farmers can delete products")
+		return
 	}
 
-	id := extractPathParam(request.Path, "/api/products/")
+	id := extractPathParam(r.URL.Path, "/api/products/")
 
 	// Verify ownership
-	product, err := db.GetProduct(ctx, id)
+	product, err := db.GetProduct(r.Context(), id)
 	if err != nil || product == nil {
-		return errorResponse(http.StatusNotFound, "Product not found")
+		errorResponse(w, http.StatusNotFound, "Product not found")
+		return
 	}
 	if product.FarmerID != user.UserID {
-		return errorResponse(http.StatusForbidden, "You can only delete your own products")
+		errorResponse(w, http.StatusForbidden, "You can only delete your own products")
+		return
 	}
 
-	if err := db.DeleteProduct(ctx, id, user.UserID); err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to delete product: "+err.Error())
+	if err := db.DeleteProduct(r.Context(), id, user.UserID); err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Failed to delete product: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, map[string]string{"message": "Product deleted"})
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "Product deleted"})
 }
 
 // ---- Helpers ----

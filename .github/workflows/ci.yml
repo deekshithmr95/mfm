@@ -2,9 +2,9 @@ name: CI — Shared + Web + Mobile
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, dev]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -75,12 +75,6 @@ jobs:
           key: deps-${{ hashFiles('package-lock.json') }}
       - name: Build Next.js
         run: npm run build --workspace=frontend
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-build
-          path: frontend/.next
-          retention-days: 7
 
   # ─────────────────────────────────────────────────────────
   # Step 4: Run frontend tests
@@ -125,29 +119,36 @@ jobs:
       - run: go test ./... -v
 
   # ─────────────────────────────────────────────────────────
-  # Step 6: Deploy (only on main branch push)
+  # Step 6: Deploy to GCP (only on main branch push)
   # ─────────────────────────────────────────────────────────
-  deploy-backend:
+  deploy:
     needs: [build-backend, build-web]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          go-version: '1.22'
-      - uses: actions/setup-node@v4
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install -g serverless
-      - run: go build -ldflags="-s -w" -o bin/bootstrap cmd/api/main.go
-        env:
-          GOARCH: arm64
-          GOOS: linux
-      - run: sls deploy --stage production --verbose
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+        
+      - name: Deploy Frontend to Firebase Hosting
+        run: |
+          firebase experiments:enable webframeworks
+          firebase deploy --only hosting --project mysore-farmer-market
+        
+      - name: Deploy Backend to Cloud Functions
+        working-directory: backend
+        run: bash scripts/deploy.sh

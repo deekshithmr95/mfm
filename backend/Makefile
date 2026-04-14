@@ -1,12 +1,16 @@
-.PHONY: build clean deploy deps local-db local-db-stop create-table seed-data test
+.PHONY: build clean deploy deps local-db local-db-stop seed-data test run
 
 # Run tests
 test:
 	go test ./... -v
 
-# Build for AWS Lambda (Linux ARM64)
+# Build for local development / Cloud Functions
 build:
-	set GOARCH=arm64&& set GOOS=linux&& go build -ldflags="-s -w" -o bin/bootstrap cmd/api/main.go
+	go build -o bin/api cmd/api/main.go
+
+# Run locally
+run: build
+	set FIRESTORE_EMULATOR_HOST=localhost:8080&& set GCP_PROJECT_ID=mysore-farmer-market&& set AUTH_MODE=mock&& bin\api.exe
 
 # Clean build artifacts
 clean:
@@ -16,23 +20,26 @@ clean:
 deps:
 	go mod tidy
 
-# Start local DynamoDB
+# Start local Firestore emulator (requires Firebase CLI: npm install -g firebase-tools)
 local-db:
-	docker-compose up -d
+	firebase emulators:start --only firestore --project mysore-farmer-market
 
-# Stop local DynamoDB
-local-db-stop:
-	docker-compose down
-
-# Create table in local DynamoDB
-create-table:
-	powershell -File scripts/create-table.ps1
-
-# Seed sample data into local DynamoDB
+# Seed sample data into Firestore emulator
 seed-data:
-	powershell -File scripts/seed-data.ps1
+	set FIRESTORE_EMULATOR_HOST=localhost:8080&& set GCP_PROJECT_ID=mysore-farmer-market&& go run scripts/seed-data.go
 
-# Deploy to AWS
-deploy: clean build
-	sls deploy --verbose
+# Deploy to Google Cloud Functions (Gen 2)
+deploy: clean
+	gcloud functions deploy farmers-marketplace-api \
+		--gen2 \
+		--runtime=go121 \
+		--region=asia-south1 \
+		--source=. \
+		--entry-point=APIHandler \
+		--trigger-http \
+		--allow-unauthenticated \
+		--set-env-vars=GCP_PROJECT_ID=mysore-farmer-market,AUTH_MODE=mock
 
+# Run go vet
+vet:
+	go vet ./...

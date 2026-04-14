@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './checkout.module.css';
@@ -69,7 +68,6 @@ export default function CheckoutPage() {
   const clearCart = useCartStore((s) => s.clearCart);
   const placeOrder = useOrderStore((s) => s.placeOrder);
   const addToast = useToastStore((s) => s.addToast);
-  const router = useRouter();
 
   const [step, setStep] = useState<Step>('address');
   const [address, setAddress] = useState<OrderAddress>({

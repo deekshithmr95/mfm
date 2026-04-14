@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Products: readable by everyone, writable by authenticated users
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Orders: readable/writable by authenticated users
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Users: readable/writable by authenticated users
+    match /users/{userId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Config (About Us, etc.): readable by everyone, writable by admin
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

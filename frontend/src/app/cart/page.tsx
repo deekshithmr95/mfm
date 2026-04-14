@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './cart.module.css';
-import { useCartStore, CartItem } from '@/store/useCartStore';
+import { useCartStore } from '@/store/useCartStore';
 import { useMemo } from 'react';
 
 export default function CartPage() {

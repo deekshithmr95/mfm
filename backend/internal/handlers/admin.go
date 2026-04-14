@@ -1,15 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"farmers-marketplace-backend/internal/db"
 	"farmers-marketplace-backend/internal/middleware"
 	"farmers-marketplace-backend/internal/models"
-
-	"github.com/aws/aws-lambda-go/events"
 )
 
 // PlatformOverview represents the admin dashboard stats
@@ -32,12 +30,14 @@ type UserWithStats struct {
 }
 
 // GetPlatformOverview handles GET /api/admin/overview
-func GetPlatformOverview(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func GetPlatformOverview(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
+	ctx := r.Context()
 	farmers, _ := db.ListUsersByRole(ctx, "farmer")
 	consumers, _ := db.ListUsersByRole(ctx, "consumer")
 	products, _ := db.ListProducts(ctx, "")
@@ -66,161 +66,190 @@ func GetPlatformOverview(ctx context.Context, request events.APIGatewayProxyRequ
 		overview.TotalRevenue += o.Total
 	}
 
-	return jsonResponse(http.StatusOK, overview)
+	jsonResponse(w, http.StatusOK, overview)
 }
 
 // ListAllUsers handles GET /api/admin/users
-func ListAllUsers(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func ListAllUsers(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
-	role := request.QueryStringParameters["role"]
+	role := r.URL.Query().Get("role")
 
 	var users []models.User
 	var err error
 
 	if role != "" {
-		users, err = db.ListUsersByRole(ctx, role)
+		users, err = db.ListUsersByRole(r.Context(), role)
 	} else {
-		users, err = db.ListAllUsers(ctx)
+		users, err = db.ListAllUsers(r.Context())
 	}
 
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, err.Error())
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, users)
+	jsonResponse(w, http.StatusOK, users)
 }
 
 // GetUserProfile handles GET /api/admin/users/{id}
-func GetUserProfile(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
-	userID := extractPathParam(request.Path, "/api/admin/users/")
+	userID := extractPathParam(r.URL.Path, "/api/admin/users/")
 
-	user, err := db.GetUser(ctx, userID)
+	user, err := db.GetUser(r.Context(), userID)
 	if err != nil || user == nil {
-		return errorResponse(http.StatusNotFound, "User not found")
+		errorResponse(w, http.StatusNotFound, "User not found")
+		return
 	}
 
 	// Build enriched profile
 	result := UserWithStats{User: *user}
 
 	if user.Role == "farmer" {
-		products, _ := db.ListFarmerProducts(ctx, user.ID)
+		products, _ := db.ListFarmerProducts(r.Context(), user.ID)
 		result.ProductCount = len(products)
 	}
 
 	if user.Role == "consumer" {
-		orders, _ := db.ListCustomerOrders(ctx, user.ID)
+		orders, _ := db.ListCustomerOrders(r.Context(), user.ID)
 		result.OrderCount = len(orders)
 		for _, o := range orders {
 			result.TotalSales += o.Total
 		}
 	}
 
-	return jsonResponse(http.StatusOK, result)
+	jsonResponse(w, http.StatusOK, result)
 }
 
 // ListFarmers handles GET /api/admin/farmers — returns farmers with stats
-func ListFarmers(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func ListFarmers(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
-	farmers, err := db.ListUsersByRole(ctx, "farmer")
+	farmers, err := db.ListUsersByRole(r.Context(), "farmer")
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, err.Error())
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	var enriched []UserWithStats
 	for _, f := range farmers {
 		u := UserWithStats{User: f}
-		products, _ := db.ListFarmerProducts(ctx, f.ID)
+		products, _ := db.ListFarmerProducts(r.Context(), f.ID)
 		u.ProductCount = len(products)
 		enriched = append(enriched, u)
 	}
 
-	return jsonResponse(http.StatusOK, enriched)
+	jsonResponse(w, http.StatusOK, enriched)
 }
 
 // ListConsumers handles GET /api/admin/consumers
-func ListConsumers(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func ListConsumers(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
-	consumers, err := db.ListUsersByRole(ctx, "consumer")
+	consumers, err := db.ListUsersByRole(r.Context(), "consumer")
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, err.Error())
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	var enriched []UserWithStats
 	for _, c := range consumers {
 		u := UserWithStats{User: c}
-		orders, _ := db.ListCustomerOrders(ctx, c.ID)
+		orders, _ := db.ListCustomerOrders(r.Context(), c.ID)
 		u.OrderCount = len(orders)
 		enriched = append(enriched, u)
 	}
 
-	return jsonResponse(http.StatusOK, enriched)
+	jsonResponse(w, http.StatusOK, enriched)
 }
 
 // UpdateUserStatusHandler handles PUT /api/admin/users/{id}/status
-func UpdateUserStatusHandler(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func UpdateUserStatusHandler(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
-	userID := extractPathParam(request.Path, "/api/admin/users/")
+	userID := extractPathParam(r.URL.Path, "/api/admin/users/")
 
-	var body struct {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
+	var reqBody struct {
 		Status string `json:"status"`
 		Notes  string `json:"notes"`
 	}
-	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
-		return errorResponse(http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &reqBody); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
 	}
 
 	valid := map[string]bool{"active": true, "suspended": true, "pending_onboard": true}
-	if !valid[body.Status] {
-		return errorResponse(http.StatusBadRequest, "Invalid status")
+	if !valid[reqBody.Status] {
+		errorResponse(w, http.StatusBadRequest, "Invalid status")
+		return
 	}
 
-	if err := db.UpdateUserStatus(ctx, userID, body.Status, body.Notes); err != nil {
-		return errorResponse(http.StatusInternalServerError, err.Error())
+	if err := db.UpdateUserStatus(r.Context(), userID, reqBody.Status, reqBody.Notes); err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, map[string]string{"message": "User status updated"})
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "User status updated"})
 }
 
 // UpdateUserNotesHandler handles PUT /api/admin/users/{id}/notes
-func UpdateUserNotesHandler(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func UpdateUserNotesHandler(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
-	userID := extractPathParam(request.Path, "/api/admin/users/")
+	userID := extractPathParam(r.URL.Path, "/api/admin/users/")
 
-	var body struct {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
+	var reqBody struct {
 		Notes string `json:"notes"`
 	}
-	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
-		return errorResponse(http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &reqBody); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
 	}
 
-	if err := db.UpdateUserNotes(ctx, userID, body.Notes); err != nil {
-		return errorResponse(http.StatusInternalServerError, err.Error())
+	if err := db.UpdateUserNotes(r.Context(), userID, reqBody.Notes); err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, map[string]string{"message": "Notes updated"})
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "Notes updated"})
 }

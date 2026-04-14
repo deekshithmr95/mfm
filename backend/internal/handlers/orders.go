@@ -1,35 +1,44 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"farmers-marketplace-backend/internal/db"
 	"farmers-marketplace-backend/internal/middleware"
 	"farmers-marketplace-backend/internal/models"
-
-	"github.com/aws/aws-lambda-go/events"
 )
 
 // CreateOrder handles POST /api/orders
-func CreateOrder(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	user, ok := middleware.RequireAuth(request)
+func CreateOrder(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.RequireAuth(r)
 	if !ok {
-		return errorResponse(http.StatusUnauthorized, "Authentication required")
+		errorResponse(w, http.StatusUnauthorized, "Authentication required")
+		return
 	}
 
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
 	var input models.CreateOrderInput
-	if err := json.Unmarshal([]byte(request.Body), &input); err != nil {
-		return errorResponse(http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &input); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
 	}
 
 	if len(input.Items) == 0 {
-		return errorResponse(http.StatusBadRequest, "Order must have at least one item")
+		errorResponse(w, http.StatusBadRequest, "Order must have at least one item")
+		return
 	}
 
 	if input.Address.FullName == "" || input.Address.Pincode == "" {
-		return errorResponse(http.StatusBadRequest, "Delivery address is required")
+		errorResponse(w, http.StatusBadRequest, "Delivery address is required")
+		return
 	}
 
 	if input.PaymentMethod == "" {
@@ -37,78 +46,96 @@ func CreateOrder(ctx context.Context, request events.APIGatewayProxyRequest) (Re
 	}
 
 	order := models.NewOrder(input, user.UserID, user.Name)
-	created, err := db.PutOrder(ctx, order)
+	created, err := db.PutOrder(r.Context(), order)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to create order: "+err.Error())
+		errorResponse(w, http.StatusInternalServerError, "Failed to create order: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusCreated, created)
+	jsonResponse(w, http.StatusCreated, created)
 }
 
 // GetOrder handles GET /api/orders/{id}
-func GetOrder(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireAuth(request)
+func GetOrder(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireAuth(r)
 	if !ok {
-		return errorResponse(http.StatusUnauthorized, "Authentication required")
+		errorResponse(w, http.StatusUnauthorized, "Authentication required")
+		return
 	}
 
-	id := extractPathParam(request.Path, "/api/orders/")
+	id := extractPathParam(r.URL.Path, "/api/orders/")
 
-	order, err := db.GetOrder(ctx, id)
+	order, err := db.GetOrder(r.Context(), id)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, err.Error())
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	if order == nil {
-		return errorResponse(http.StatusNotFound, "Order not found")
+		errorResponse(w, http.StatusNotFound, "Order not found")
+		return
 	}
 
-	return jsonResponse(http.StatusOK, order)
+	jsonResponse(w, http.StatusOK, order)
 }
 
 // ListOrders handles GET /api/orders
-func ListOrders(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	user, ok := middleware.RequireAuth(request)
+func ListOrders(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.RequireAuth(r)
 	if !ok {
-		return errorResponse(http.StatusUnauthorized, "Authentication required")
+		errorResponse(w, http.StatusUnauthorized, "Authentication required")
+		return
 	}
 
 	// Consumers get their own orders
-	orders, err := db.ListCustomerOrders(ctx, user.UserID)
+	orders, err := db.ListCustomerOrders(r.Context(), user.UserID)
 	if err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to list orders: "+err.Error())
+		errorResponse(w, http.StatusInternalServerError, "Failed to list orders: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, orders)
+	jsonResponse(w, http.StatusOK, orders)
 }
 
 // UpdateOrderStatus handles PUT /api/orders/{id}/status
-func UpdateOrderStatus(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	user, ok := middleware.RequireAuth(request)
+func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.RequireAuth(r)
 	if !ok {
-		return errorResponse(http.StatusUnauthorized, "Authentication required")
+		errorResponse(w, http.StatusUnauthorized, "Authentication required")
+		return
 	}
 
 	// Only farmers and admins can update order status
 	if user.Role != "farmer" && user.Role != "admin" {
-		return errorResponse(http.StatusForbidden, "Only farmers and admins can update order status")
+		errorResponse(w, http.StatusForbidden, "Only farmers and admins can update order status")
+		return
 	}
 
-	id := extractPathParam(request.Path, "/api/orders/")
+	id := extractPathParam(r.URL.Path, "/api/orders/")
 
-	var body struct {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
+	var reqBody struct {
 		Status string `json:"status"`
 	}
-	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
-		return errorResponse(http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &reqBody); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
 	}
 
-	if !models.ValidOrderStatuses[body.Status] {
-		return errorResponse(http.StatusBadRequest, "Invalid status. Must be: confirmed, processing, shipped, out_for_delivery, or delivered")
+	if !models.ValidOrderStatuses[reqBody.Status] {
+		errorResponse(w, http.StatusBadRequest, "Invalid status. Must be: confirmed, processing, shipped, out_for_delivery, or delivered")
+		return
 	}
 
-	if err := db.UpdateOrderStatus(ctx, id, body.Status); err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to update order: "+err.Error())
+	if err := db.UpdateOrderStatus(r.Context(), id, reqBody.Status); err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Failed to update order: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, map[string]string{"message": "Order status updated", "status": body.Status})
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "Order status updated", "status": reqBody.Status})
 }
