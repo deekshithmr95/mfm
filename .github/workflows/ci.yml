@@ -159,6 +159,7 @@ jobs:
             run.googleapis.com \
             artifactregistry.googleapis.com \
             cloudresourcemanager.googleapis.com \
+            cloudbilling.googleapis.com \
             --project mysore-farmer-market
 
       - name: Deploy Frontend to Firebase Hosting
