@@ -144,6 +144,10 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Fix Firebase Next.js binary issue
+        run: npm install next --no-save
+        working-directory: frontend
+
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
         
