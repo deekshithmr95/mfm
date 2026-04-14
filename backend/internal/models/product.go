@@ -3,36 +3,36 @@ package models
 import "time"
 
 type Product struct {
-	ID              string   `json:"id" dynamodbav:"id"`
-	Name            string   `json:"name" dynamodbav:"name"`
-	FarmerID        string   `json:"farmerId" dynamodbav:"farmerId"`
-	FarmerName      string   `json:"farmer" dynamodbav:"farmerName"`
-	Image           string   `json:"image" dynamodbav:"image"`
-	OriginalPrice   float64  `json:"originalPrice" dynamodbav:"originalPrice"`
-	OfferPrice      float64  `json:"offerPrice" dynamodbav:"offerPrice"`
-	DiscountPercent int      `json:"discountPercent" dynamodbav:"discountPercent"`
-	Stock           int      `json:"stock" dynamodbav:"stock"`
-	Category        string   `json:"category" dynamodbav:"category"`
-	Unit            string   `json:"unit" dynamodbav:"unit"`
-	Description     string   `json:"description" dynamodbav:"description"`
-	CreatedAt       string   `json:"createdAt" dynamodbav:"createdAt"`
+	ID              string   `json:"id" firestore:"id"`
+	Name            string   `json:"name" firestore:"name"`
+	FarmerID        string   `json:"farmerId" firestore:"farmerId"`
+	FarmerName      string   `json:"farmer" firestore:"farmerName"`
+	Image           string   `json:"image" firestore:"image"`
+	OriginalPrice   float64  `json:"originalPrice" firestore:"originalPrice"`
+	OfferPrice      float64  `json:"offerPrice" firestore:"offerPrice"`
+	DiscountPercent int      `json:"discountPercent" firestore:"discountPercent"`
+	Stock           int      `json:"stock" firestore:"stock"`
+	Category        string   `json:"category" firestore:"category"`
+	Unit            string   `json:"unit" firestore:"unit"`
+	Description     string   `json:"description" firestore:"description"`
+	CreatedAt       string   `json:"createdAt" firestore:"createdAt"`
 
 	// Farmer provenance
-	FarmerLocation string `json:"farmerLocation,omitempty" dynamodbav:"farmerLocation,omitempty"`
-	FarmerSince    string `json:"farmerSince,omitempty" dynamodbav:"farmerSince,omitempty"`
-	FarmingMethod  string `json:"farmingMethod,omitempty" dynamodbav:"farmingMethod,omitempty"`
-	Certifications []string `json:"certifications,omitempty" dynamodbav:"certifications,omitempty"`
+	FarmerLocation string `json:"farmerLocation,omitempty" firestore:"farmerLocation,omitempty"`
+	FarmerSince    string `json:"farmerSince,omitempty" firestore:"farmerSince,omitempty"`
+	FarmingMethod  string `json:"farmingMethod,omitempty" firestore:"farmingMethod,omitempty"`
+	Certifications []string `json:"certifications,omitempty" firestore:"certifications,omitempty"`
 
 	// Harvest info
-	HarvestDate string `json:"harvestDate,omitempty" dynamodbav:"harvestDate,omitempty"`
-	ShelfLife   string `json:"shelfLife,omitempty" dynamodbav:"shelfLife,omitempty"`
+	HarvestDate string `json:"harvestDate,omitempty" firestore:"harvestDate,omitempty"`
+	ShelfLife   string `json:"shelfLife,omitempty" firestore:"shelfLife,omitempty"`
 
 	// Badges: seasonal | featured | just_harvested | bestseller | new
-	Badges []string `json:"badges,omitempty" dynamodbav:"badges,omitempty"`
+	Badges []string `json:"badges,omitempty" firestore:"badges,omitempty"`
 
 	// Social proof
-	Rating      float64 `json:"rating,omitempty" dynamodbav:"rating,omitempty"`
-	ReviewCount int     `json:"reviewCount,omitempty" dynamodbav:"reviewCount,omitempty"`
+	Rating      float64 `json:"rating,omitempty" firestore:"rating,omitempty"`
+	ReviewCount int     `json:"reviewCount,omitempty" firestore:"reviewCount,omitempty"`
 }
 
 type CreateProductInput struct {

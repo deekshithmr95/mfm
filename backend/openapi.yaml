@@ -1,0 +1,302 @@
+openapi: 3.0.0
+info:
+  title: Farmers Marketplace API
+  description: REST API for the Mysore Farmer Marketplace — powered by Google Cloud Functions and Cloud Firestore.
+  version: 1.0.0
+
+servers:
+  - url: https://asia-south1-mysore-farmer-marketplace.cloudfunctions.net/farmers-marketplace-api
+    description: Production (Cloud Functions)
+  - url: http://localhost:8080
+    description: Local development
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+
+  /api/about:
+    get:
+      summary: Get About Us content
+      operationId: getAboutUs
+      responses:
+        '200':
+          description: About Us content
+    put:
+      summary: Update About Us content (admin only)
+      operationId: updateAboutUs
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: Content updated
+
+  /api/products:
+    get:
+      summary: List all products
+      operationId: listProducts
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of products
+    post:
+      summary: Create a product (farmer only)
+      operationId: createProduct
+      security:
+        - mockAuth: []
+      responses:
+        '201':
+          description: Product created
+
+  /api/products/search:
+    get:
+      summary: Search products
+      operationId: searchProducts
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [price_low, price_high, rating]
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results
+
+  /api/products/{id}:
+    get:
+      summary: Get a single product
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details
+    put:
+      summary: Update a product (farmer only)
+      operationId: updateProduct
+      security:
+        - mockAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product updated
+    delete:
+      summary: Delete a product (farmer only)
+      operationId: deleteProduct
+      security:
+        - mockAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product deleted
+
+  /api/orders:
+    get:
+      summary: List orders for the authenticated user
+      operationId: listOrders
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: List of orders
+    post:
+      summary: Create an order
+      operationId: createOrder
+      security:
+        - mockAuth: []
+      responses:
+        '201':
+          description: Order created
+
+  /api/orders/{id}:
+    get:
+      summary: Get a single order
+      operationId: getOrder
+      security:
+        - mockAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order details
+
+  /api/orders/{id}/status:
+    put:
+      summary: Update order status (farmer/admin only)
+      operationId: updateOrderStatus
+      security:
+        - mockAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status updated
+
+  /api/farmer/stats:
+    get:
+      summary: Get farmer dashboard stats
+      operationId: getFarmerStats
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: Farmer stats
+
+  /api/farmer/listings:
+    get:
+      summary: Get farmer's product listings
+      operationId: getFarmerListings
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: Farmer's products
+
+  /api/farmer/orders:
+    get:
+      summary: Get orders for farmer
+      operationId: getFarmerOrders
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: Farmer's orders
+
+  /api/admin/overview:
+    get:
+      summary: Platform overview stats (admin only)
+      operationId: getPlatformOverview
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: Platform stats
+
+  /api/admin/users:
+    get:
+      summary: List all users (admin only)
+      operationId: listAllUsers
+      security:
+        - mockAuth: []
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of users
+
+  /api/admin/users/{id}:
+    get:
+      summary: Get user profile (admin only)
+      operationId: getUserProfile
+      security:
+        - mockAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile
+
+  /api/admin/users/{id}/status:
+    put:
+      summary: Update user status (admin only)
+      operationId: updateUserStatus
+      security:
+        - mockAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status updated
+
+  /api/admin/users/{id}/notes:
+    put:
+      summary: Update user notes (admin only)
+      operationId: updateUserNotes
+      security:
+        - mockAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notes updated
+
+  /api/admin/farmers:
+    get:
+      summary: List farmers with stats (admin only)
+      operationId: listFarmers
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: Farmers list
+
+  /api/admin/consumers:
+    get:
+      summary: List consumers with stats (admin only)
+      operationId: listConsumers
+      security:
+        - mockAuth: []
+      responses:
+        '200':
+          description: Consumers list
+
+components:
+  securitySchemes:
+    mockAuth:
+      type: apiKey
+      in: header
+      name: X-User-Id
+      description: Mock authentication via custom headers (X-User-Id, X-User-Role, etc.)

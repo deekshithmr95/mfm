@@ -1,47 +1,57 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"farmers-marketplace-backend/internal/db"
 	"farmers-marketplace-backend/internal/middleware"
 	"farmers-marketplace-backend/internal/models"
-
-	"github.com/aws/aws-lambda-go/events"
 )
 
 // GetAboutUs handles GET /api/about (public — no auth required)
-func GetAboutUs(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	content, err := db.GetAboutUs(ctx)
+func GetAboutUs(w http.ResponseWriter, r *http.Request) {
+	content, err := db.GetAboutUs(r.Context())
 	if err != nil {
 		// Return default content even on error
-		return jsonResponse(http.StatusOK, models.DefaultAboutUsContent())
+		jsonResponse(w, http.StatusOK, models.DefaultAboutUsContent())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, content)
+	jsonResponse(w, http.StatusOK, content)
 }
 
 // UpdateAboutUs handles PUT /api/about (admin only)
-func UpdateAboutUs(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	_, ok := middleware.RequireRole(request, "admin")
+func UpdateAboutUs(w http.ResponseWriter, r *http.Request) {
+	_, ok := middleware.RequireRole(r, "admin")
 	if !ok {
-		return errorResponse(http.StatusForbidden, "Admin access required")
+		errorResponse(w, http.StatusForbidden, "Admin access required")
+		return
 	}
 
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
 	var content models.AboutUsContent
-	if err := json.Unmarshal([]byte(request.Body), &content); err != nil {
-		return errorResponse(http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &content); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
 	}
 
 	if content.HeroTitle == "" {
-		return errorResponse(http.StatusBadRequest, "Hero title is required")
+		errorResponse(w, http.StatusBadRequest, "Hero title is required")
+		return
 	}
 
-	if err := db.PutAboutUs(ctx, content); err != nil {
-		return errorResponse(http.StatusInternalServerError, "Failed to update About Us: "+err.Error())
+	if err := db.PutAboutUs(r.Context(), content); err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Failed to update About Us: "+err.Error())
+		return
 	}
 
-	return jsonResponse(http.StatusOK, map[string]string{"message": "About Us content updated"})
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "About Us content updated"})
 }

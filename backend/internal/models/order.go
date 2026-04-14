@@ -4,40 +4,40 @@ import "time"
 
 // OrderAddress contains structured delivery address fields
 type OrderAddress struct {
-	FullName     string `json:"fullName" dynamodbav:"fullName"`
-	Phone        string `json:"phone" dynamodbav:"phone"`
-	AddressLine1 string `json:"addressLine1" dynamodbav:"addressLine1"`
-	AddressLine2 string `json:"addressLine2,omitempty" dynamodbav:"addressLine2,omitempty"`
-	City         string `json:"city" dynamodbav:"city"`
-	State        string `json:"state" dynamodbav:"state"`
-	Pincode      string `json:"pincode" dynamodbav:"pincode"`
+	FullName     string `json:"fullName" firestore:"fullName"`
+	Phone        string `json:"phone" firestore:"phone"`
+	AddressLine1 string `json:"addressLine1" firestore:"addressLine1"`
+	AddressLine2 string `json:"addressLine2,omitempty" firestore:"addressLine2,omitempty"`
+	City         string `json:"city" firestore:"city"`
+	State        string `json:"state" firestore:"state"`
+	Pincode      string `json:"pincode" firestore:"pincode"`
 }
 
 // OrderItem represents a single item in an order
 type OrderItem struct {
-	ProductID string  `json:"productId" dynamodbav:"productId"`
-	Name      string  `json:"name" dynamodbav:"name"`
-	Image     string  `json:"image,omitempty" dynamodbav:"image,omitempty"`
-	Farmer    string  `json:"farmer,omitempty" dynamodbav:"farmer,omitempty"`
-	Quantity  int     `json:"quantity" dynamodbav:"quantity"`
-	Price     float64 `json:"price" dynamodbav:"price"`
-	Unit      string  `json:"unit,omitempty" dynamodbav:"unit,omitempty"`
+	ProductID string  `json:"productId" firestore:"productId"`
+	Name      string  `json:"name" firestore:"name"`
+	Image     string  `json:"image,omitempty" firestore:"image,omitempty"`
+	Farmer    string  `json:"farmer,omitempty" firestore:"farmer,omitempty"`
+	Quantity  int     `json:"quantity" firestore:"quantity"`
+	Price     float64 `json:"price" firestore:"price"`
+	Unit      string  `json:"unit,omitempty" firestore:"unit,omitempty"`
 }
 
 // Order represents a customer order
 type Order struct {
-	ID                string       `json:"id" dynamodbav:"id"`
-	CustomerID        string       `json:"customerId" dynamodbav:"customerId"`
-	CustomerName      string       `json:"customer" dynamodbav:"customerName"`
-	Items             []OrderItem  `json:"items" dynamodbav:"items"`
-	Address           OrderAddress `json:"address" dynamodbav:"address"`
-	PaymentMethod     string       `json:"paymentMethod" dynamodbav:"paymentMethod"`     // upi | cod
-	Subtotal          float64      `json:"subtotal" dynamodbav:"subtotal"`
-	DeliveryFee       float64      `json:"deliveryFee" dynamodbav:"deliveryFee"`
-	Total             float64      `json:"total" dynamodbav:"total"`
-	Status            string       `json:"status" dynamodbav:"status"`
-	EstimatedDelivery string       `json:"estimatedDelivery" dynamodbav:"estimatedDelivery"`
-	CreatedAt         string       `json:"createdAt" dynamodbav:"createdAt"`
+	ID                string       `json:"id" firestore:"id"`
+	CustomerID        string       `json:"customerId" firestore:"customerId"`
+	CustomerName      string       `json:"customer" firestore:"customerName"`
+	Items             []OrderItem  `json:"items" firestore:"items"`
+	Address           OrderAddress `json:"address" firestore:"address"`
+	PaymentMethod     string       `json:"paymentMethod" firestore:"paymentMethod"`     // upi | cod
+	Subtotal          float64      `json:"subtotal" firestore:"subtotal"`
+	DeliveryFee       float64      `json:"deliveryFee" firestore:"deliveryFee"`
+	Total             float64      `json:"total" firestore:"total"`
+	Status            string       `json:"status" firestore:"status"`
+	EstimatedDelivery string       `json:"estimatedDelivery" firestore:"estimatedDelivery"`
+	CreatedAt         string       `json:"createdAt" firestore:"createdAt"`
 }
 
 // Valid order statuses in lifecycle order

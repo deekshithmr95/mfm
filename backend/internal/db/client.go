@@ -2,58 +2,50 @@ package db
 
 import (
 	"context"
+	"log"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"cloud.google.com/go/firestore"
 )
 
 var (
-	client    *dynamodb.Client
-	tableName string
+	client *firestore.Client
 )
 
-// Init initializes the DynamoDB client. Call once at startup.
-func Init() {
-	tableName = os.Getenv("DYNAMODB_TABLE")
-	if tableName == "" {
-		tableName = "farmers-marketplace-dev"
-	}
+// Collection names
+const (
+	CollectionProducts = "products"
+	CollectionOrders   = "orders"
+	CollectionUsers    = "users"
+	CollectionConfig   = "config"
+)
 
-	endpoint := os.Getenv("DYNAMODB_ENDPOINT")
+// Init initializes the Firestore client. Call once at startup.
+func Init() {
+	projectID := os.Getenv("GCP_PROJECT_ID")
+	if projectID == "" {
+		projectID = "mysore-farmer-marketplace"
+	}
 
 	ctx := context.Background()
 
-	if endpoint != "" {
-		// Local DynamoDB (Docker)
-		cfg, err := config.LoadDefaultConfig(ctx,
-			config.WithRegion("us-east-1"),
-			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("local", "local", "local")),
-		)
-		if err != nil {
-			panic("unable to load SDK config: " + err.Error())
-		}
-		client = dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
-			o.BaseEndpoint = aws.String(endpoint)
-		})
-	} else {
-		// AWS (Lambda environment auto-provides credentials)
-		cfg, err := config.LoadDefaultConfig(ctx)
-		if err != nil {
-			panic("unable to load SDK config: " + err.Error())
-		}
-		client = dynamodb.NewFromConfig(cfg)
+	// The Firestore SDK automatically detects FIRESTORE_EMULATOR_HOST
+	// for local development (e.g., FIRESTORE_EMULATOR_HOST=localhost:8080)
+	var err error
+	client, err = firestore.NewClient(ctx, projectID)
+	if err != nil {
+		log.Fatalf("Failed to create Firestore client: %v", err)
 	}
 }
 
-// GetClient returns the DynamoDB client
-func GetClient() *dynamodb.Client {
+// GetClient returns the Firestore client
+func GetClient() *firestore.Client {
 	return client
 }
 
-// GetTableName returns the table name
-func GetTableName() string {
-	return tableName
+// Close closes the Firestore client connection
+func Close() {
+	if client != nil {
+		client.Close()
+	}
 }

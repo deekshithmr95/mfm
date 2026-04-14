@@ -1,9 +1,8 @@
 package middleware
 
 import (
+	"net/http"
 	"os"
-
-	"github.com/aws/aws-lambda-go/events"
 )
 
 // UserContext holds the authenticated user's info extracted from headers or JWT
@@ -16,55 +15,55 @@ type UserContext struct {
 }
 
 // ExtractUser extracts the user context from the request.
-// In mock mode, reads custom headers. In cognito mode, would parse JWT claims.
-func ExtractUser(request events.APIGatewayProxyRequest) *UserContext {
+// In mock mode, reads custom headers. In firebase mode, would parse Firebase ID token.
+func ExtractUser(r *http.Request) *UserContext {
 	mode := os.Getenv("AUTH_MODE")
 
-	if mode == "cognito" {
-		return extractFromCognito(request)
+	if mode == "firebase" {
+		return extractFromFirebase(r)
 	}
 
-	return extractFromMockHeaders(request)
+	return extractFromMockHeaders(r)
 }
 
 // extractFromMockHeaders reads custom X- headers for local development
-func extractFromMockHeaders(request events.APIGatewayProxyRequest) *UserContext {
-	userID := request.Headers["x-user-id"]
+func extractFromMockHeaders(r *http.Request) *UserContext {
+	userID := r.Header.Get("X-User-Id")
 	if userID == "" {
 		return nil
 	}
 
-	role := request.Headers["x-user-role"]
+	role := r.Header.Get("X-User-Role")
 	if role == "" {
 		role = "consumer"
 	}
 
 	return &UserContext{
 		UserID: userID,
-		Name:   request.Headers["x-user-name"],
-		Email:  request.Headers["x-user-email"],
+		Name:   r.Header.Get("X-User-Name"),
+		Email:  r.Header.Get("X-User-Email"),
 		Role:   role,
-		Farm:   request.Headers["x-user-farm"],
+		Farm:   r.Header.Get("X-User-Farm"),
 	}
 }
 
-// extractFromCognito parses the JWT from the Authorization header.
-// Placeholder for when Cognito is wired up.
-func extractFromCognito(request events.APIGatewayProxyRequest) *UserContext {
-	// TODO: Validate JWT using Cognito JWKS endpoint
+// extractFromFirebase parses the Firebase ID token from the Authorization header.
+// Placeholder for when Firebase Auth is wired up.
+func extractFromFirebase(r *http.Request) *UserContext {
+	// TODO: Validate Firebase ID token using Firebase Admin SDK
 	// For now, fall back to mock headers
-	return extractFromMockHeaders(request)
+	return extractFromMockHeaders(r)
 }
 
 // RequireAuth checks that a user is authenticated
-func RequireAuth(request events.APIGatewayProxyRequest) (*UserContext, bool) {
-	user := ExtractUser(request)
+func RequireAuth(r *http.Request) (*UserContext, bool) {
+	user := ExtractUser(r)
 	return user, user != nil
 }
 
 // RequireRole checks that a user has a specific role
-func RequireRole(request events.APIGatewayProxyRequest, role string) (*UserContext, bool) {
-	user := ExtractUser(request)
+func RequireRole(r *http.Request, role string) (*UserContext, bool) {
+	user := ExtractUser(r)
 	if user == nil || user.Role != role {
 		return nil, false
 	}

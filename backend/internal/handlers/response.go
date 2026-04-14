@@ -2,40 +2,35 @@ package handlers
 
 import (
 	"encoding/json"
-
-	"github.com/aws/aws-lambda-go/events"
+	"net/http"
 )
 
-// jsonResponse creates a JSON API response
-func jsonResponse(status int, body interface{}) (events.APIGatewayProxyResponse, error) {
+// jsonResponse writes a JSON response to the http.ResponseWriter
+func jsonResponse(w http.ResponseWriter, status int, body interface{}) {
 	b, err := json.Marshal(body)
 	if err != nil {
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       `{"error":"Internal server error"}`,
-			Headers:    corsHeaders(),
-		}, nil
+		w.Header().Set("Content-Type", "application/json")
+		setCORSHeaders(w)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error":"Internal server error"}`))
+		return
 	}
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: status,
-		Body:       string(b),
-		Headers:    corsHeaders(),
-	}, nil
+	w.Header().Set("Content-Type", "application/json")
+	setCORSHeaders(w)
+	w.WriteHeader(status)
+	w.Write(b)
 }
 
-// errorResponse creates an error JSON response
-func errorResponse(status int, message string) (events.APIGatewayProxyResponse, error) {
+// errorResponse writes an error JSON response
+func errorResponse(w http.ResponseWriter, status int, message string) {
 	body := map[string]string{"error": message}
-	return jsonResponse(status, body)
+	jsonResponse(w, status, body)
 }
 
-// corsHeaders returns standard CORS headers
-func corsHeaders() map[string]string {
-	return map[string]string{
-		"Content-Type":                 "application/json",
-		"Access-Control-Allow-Origin":  "*",
-		"Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-		"Access-Control-Allow-Headers": "Content-Type,Authorization,X-User-Id,X-User-Role,X-User-Name,X-User-Email,X-User-Farm",
-	}
+// setCORSHeaders sets standard CORS headers on the response
+func setCORSHeaders(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Authorization,X-User-Id,X-User-Role,X-User-Name,X-User-Email,X-User-Farm")
 }
