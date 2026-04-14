@@ -151,6 +151,14 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
         
+      - name: Prep Shared Package for Firebase Cloud Build
+        run: |
+          cd packages/shared
+          npm pack
+          mv mfm-shared-*.tgz ../../frontend/mfm-shared.tgz
+          cd ../../frontend
+          node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json')); pkg.dependencies['@mfm/shared'] = 'file:./mfm-shared.tgz'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+
       - name: Deploy Frontend to Firebase Hosting
         run: |
           firebase experiments:enable webframeworks
