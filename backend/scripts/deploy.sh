@@ -20,7 +20,7 @@ echo "   Region:   $REGION"
 
 gcloud functions deploy "$FUNCTION_NAME" \
   --gen2 \
-  --runtime=go121 \
+  --runtime=go122 \
   --region="$REGION" \
   --source=. \
   --entry-point=APIHandler \
