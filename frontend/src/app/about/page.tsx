@@ -1,6 +1,7 @@
 'use client';
 
 import styles from './about.module.css';
+import Link from 'next/link';
 import { useAboutUsStore } from '@/store/useAboutUsStore';
 
 export default function AboutPage() {
@@ -74,8 +75,8 @@ export default function AboutPage() {
           <h2 className={styles.ctaTitle}>Ready to taste the difference?</h2>
           <p className={styles.ctaDesc}>Join thousands of Mysore residents who trust us for their daily fresh produce.</p>
           <div className={styles.ctaActions}>
-            <a href="/products" className={styles.ctaPrimary}>Browse Products</a>
-            <a href="/login" className={styles.ctaSecondary}>Join as a Farmer</a>
+            <Link href="/products" className={styles.ctaPrimary}>Browse Products</Link>
+            <Link href="/login" className={styles.ctaSecondary}>Join as a Farmer</Link>
           </div>
         </div>
       </section>

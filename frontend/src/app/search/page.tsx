@@ -18,7 +18,7 @@ function SearchContent() {
     const q = query.toLowerCase().trim();
     if (!q) return products;
 
-    let filtered = products.filter(
+    const filtered = products.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.farmer.toLowerCase().includes(q) ||

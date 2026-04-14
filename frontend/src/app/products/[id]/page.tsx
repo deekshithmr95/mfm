@@ -28,6 +28,7 @@ export default function ProductDetailPage() {
   const { isInWishlist, toggleWishlist } = useWishlistStore();
   const addToast = useToastStore((s) => s.addToast);
   const [quantity, setQuantity] = useState(1);
+  const [now] = useState(() => Date.now());
 
   if (isLoading) {
     return (
@@ -68,7 +69,7 @@ export default function ProductDetailPage() {
     : relatedProducts;
 
   const harvestDaysAgo = product.harvestDate
-    ? Math.floor((Date.now() - new Date(product.harvestDate).getTime()) / 86400000)
+    ? Math.floor((now - new Date(product.harvestDate).getTime()) / 86400000)
     : null;
 
   const handleAddToCart = () => {
