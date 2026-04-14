@@ -75,12 +75,6 @@ jobs:
           key: deps-${{ hashFiles('package-lock.json') }}
       - name: Build Next.js
         run: npm run build --workspace=frontend
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-build
-          path: frontend/out
-          retention-days: 7
 
   # ─────────────────────────────────────────────────────────
   # Step 4: Run frontend tests
@@ -141,12 +135,6 @@ jobs:
           
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-        
-      - name: Download web build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: web-build
-          path: frontend/out
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -157,7 +145,9 @@ jobs:
         run: npm install -g firebase-tools
         
       - name: Deploy Frontend to Firebase Hosting
-        run: firebase deploy --only hosting --project mysore-farmer-market
+        run: |
+          firebase experiments:enable webframeworks
+          firebase deploy --only hosting --project mysore-farmer-market
         
       - name: Deploy Backend to Cloud Functions
         working-directory: backend

@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "frontend/out",
+    "source": "frontend",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -10,10 +10,6 @@
       {
         "source": "/api/**",
         "function": "farmers-marketplace-api"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
       }
     ],
     "headers": [
