@@ -165,6 +165,7 @@ jobs:
       - name: Deploy Frontend to Firebase Hosting
         run: |
           firebase experiments:enable webframeworks
+          find . -name "package-lock.json" -type f -delete
           firebase deploy --only hosting --project mysore-farmer-market --debug --force
         
       - name: Deploy Backend to Cloud Functions
