@@ -145,9 +145,7 @@ jobs:
         run: npm ci
 
       - name: Fix Firebase Next.js binary issue
-        run: |
-          mkdir -p node_modules/.bin
-          ln -sf ../../node_modules/next/dist/bin/next node_modules/.bin/next
+        run: npm install next@16.2.2 --no-save --no-package-lock
         working-directory: frontend
 
       - name: Install Firebase CLI
