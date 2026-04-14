@@ -145,7 +145,9 @@ jobs:
         run: npm ci
 
       - name: Fix Firebase Next.js binary issue
-        run: npm install next --no-save
+        run: |
+          mkdir -p node_modules/.bin
+          ln -sf ../../node_modules/next/dist/bin/next node_modules/.bin/next
         working-directory: frontend
 
       - name: Install Firebase CLI
@@ -165,7 +167,6 @@ jobs:
       - name: Deploy Frontend to Firebase Hosting
         run: |
           firebase experiments:enable webframeworks
-          find . -name "package-lock.json" -type f -delete
           firebase deploy --only hosting --project mysore-farmer-market --debug --force
         
       - name: Deploy Backend to Cloud Functions
