@@ -1,11 +1,42 @@
 'use client';
 
+import { useEffect } from 'react';
 import styles from './about.module.css';
 import Link from 'next/link';
 import { useAboutUsStore } from '@/store/useAboutUsStore';
 
 export default function AboutPage() {
-  const { content } = useAboutUsStore();
+  const { content, loading, error, fetchContent } = useAboutUsStore();
+
+  useEffect(() => {
+    fetchContent();
+  }, [fetchContent]);
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <section className={styles.hero}>
+          <div className="container">
+            <p className={styles.eyebrow}>About Us</p>
+            <h1 className={styles.heroTitle}>Loading...</h1>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (error || !content) {
+    return (
+      <div className={styles.page}>
+        <section className={styles.hero}>
+          <div className="container">
+            <p className={styles.eyebrow}>About Us</p>
+            <h1 className={styles.heroTitle}>Error loading content</h1>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>

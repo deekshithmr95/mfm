@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './dashboard.module.css';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -204,12 +204,17 @@ function OrderDetailModal({ order, onClose }: { order: FarmerOrder; onClose: () 
 // ============ MAIN DASHBOARD ============
 export default function FarmerDashboard() {
   const user = useAuthStore((s) => s.user);
-  const { listings, orders, addListing, updateListing, deleteListing, updateOrderStatus } = useFarmerStore();
+  const { listings, orders, addListing, updateListing, deleteListing, updateOrderStatus, fetchListings, fetchOrders } = useFarmerStore();
   const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'orders'>('overview');
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewingOrder, setViewingOrder] = useState<FarmerOrder | null>(null);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchListings();
+    fetchOrders();
+  }, []);
 
   const totalSales = orders.reduce((t, o) => t + o.total, 0);
   const activeListings = listings.filter((l) => l.stock > 0).length;

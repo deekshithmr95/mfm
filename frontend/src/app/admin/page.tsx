@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './admin.module.css';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAdminStore, AdminUser, UserStatus } from '@/store/useAdminStore';
 import { useAboutUsStore } from '@/store/useAboutUsStore';
@@ -127,13 +127,24 @@ function UserDetailModal({
 
 // =========== MAIN ADMIN DASHBOARD ===========
 export default function AdminDashboard() {
-  const { farmers, consumers, updateUserStatus, updateUserNotes } = useAdminStore();
-  const { content: aboutContent, updateContent: updateAboutContent } = useAboutUsStore();
+  const { farmers, consumers, updateUserStatus, updateUserNotes, fetchAllUsers } = useAdminStore();
+  const { content: aboutContent, updateContent: updateAboutContent, fetchContent: fetchAboutContent } = useAboutUsStore();
   const addToast = useToastStore((s) => s.addToast);
   const [activeTab, setActiveTab] = useState<'overview' | 'farmers' | 'consumers' | 'about'>('overview');
   const [viewingUser, setViewingUser] = useState<AdminUser | null>(null);
   const [search, setSearch] = useState('');
-  const [editAbout, setEditAbout] = useState(aboutContent);
+  const [editAbout, setEditAbout] = useState(aboutContent || undefined);
+
+  useEffect(() => {
+    fetchAllUsers();
+    fetchAboutContent();
+  }, []);
+
+  useEffect(() => {
+    if (aboutContent) {
+      setEditAbout(aboutContent);
+    }
+  }, [aboutContent]);
 
   const allUsers = useMemo(() => [...farmers, ...consumers], [farmers, consumers]);
 

@@ -21,7 +21,7 @@ const BADGE_LABELS: Record<string, string> = {
 
 export default function ProductDetail() {
   const params = useParams();
-  const id = Number(params.id);
+  const id = typeof params.id === 'string' ? params.id : String(params.id);
   const { data: product, isLoading } = useProduct(id);
   const { data: allProducts } = useAllProducts();
   const addToCart = useCartStore((s) => s.addToCart);
