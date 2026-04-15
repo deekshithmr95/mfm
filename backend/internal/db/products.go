@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"farmers-marketplace-backend/internal/models"
+	"github.com/deekshithmr95/mfm/backend/internal/models"
 
 	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"

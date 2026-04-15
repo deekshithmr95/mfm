@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"farmers-marketplace-backend/internal/models"
+	"github.com/deekshithmr95/mfm/backend/internal/models"
 
 	"github.com/google/uuid"
 	"google.golang.org/api/iterator"

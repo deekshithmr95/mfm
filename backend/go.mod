@@ -1,4 +1,4 @@
-module farmers-marketplace-backend
+module github.com/deekshithmr95/mfm/backend
 
 go 1.22
 
