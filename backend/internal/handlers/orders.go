@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 
-	"farmers-marketplace-backend/internal/db"
-	"farmers-marketplace-backend/internal/middleware"
-	"farmers-marketplace-backend/internal/models"
+	"github.com/deekshithmr95/mfm/backend/internal/db"
+	"github.com/deekshithmr95/mfm/backend/internal/middleware"
+	"github.com/deekshithmr95/mfm/backend/internal/models"
 )
 
 // CreateOrder handles POST /api/orders

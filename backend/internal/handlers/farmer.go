@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"farmers-marketplace-backend/internal/db"
-	"farmers-marketplace-backend/internal/middleware"
+	"github.com/deekshithmr95/mfm/backend/internal/db"
+	"github.com/deekshithmr95/mfm/backend/internal/middleware"
 )
 
 // FarmerStats represents aggregated dashboard data

@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"farmers-marketplace-backend/internal/db"
-	"farmers-marketplace-backend/internal/handlers"
+	"github.com/deekshithmr95/mfm/backend/internal/db"
+	"github.com/deekshithmr95/mfm/backend/internal/handlers"
 )
 
 func init() {
