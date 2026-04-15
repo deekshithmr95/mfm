@@ -18,10 +18,12 @@ export function useAllProducts() {
   });
 }
 
-export function useProduct(id: number) {
+// Updated to use string ID (backend uses UUIDs/string IDs)
+export function useProduct(id: string) {
   return useQuery<Product | undefined, Error>({
     queryKey: ['product', id],
     queryFn: () => fetchProductById(id),
     staleTime: 1000 * 60 * 5,
+    enabled: !!id, // Don't fetch if no ID provided
   });
 }
