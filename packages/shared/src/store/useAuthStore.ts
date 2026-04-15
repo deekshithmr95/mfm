@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getStorage } from './storage';
+import APIClient from '../api/client';
 import { ADMIN_ACCOUNTS } from '../constants/admin';
 
 export type UserRole = 'farmer' | 'consumer' | 'admin';
@@ -36,6 +37,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (adminAccount) {
       const adminUser: User = { ...adminAccount };
       await getStorage().setItem(STORAGE_KEY, JSON.stringify(adminUser));
+      // Set the user in the API client for subsequent requests
+      APIClient.setUser(adminUser);
       set({ user: adminUser, isAuthenticated: true });
       return { success: true };
     }
@@ -45,6 +48,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (stored) {
       const user = JSON.parse(stored) as User;
       if (user.email === email) {
+        APIClient.setUser(user);
         set({ user, isAuthenticated: true });
         return { success: true };
       }
@@ -58,6 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       role: 'consumer',
     };
     await getStorage().setItem(STORAGE_KEY, JSON.stringify(user));
+    APIClient.setUser(user);
     set({ user, isAuthenticated: true });
     return { success: true };
   },
@@ -74,12 +79,14 @@ export const useAuthStore = create<AuthState>((set) => ({
       location: role === 'farmer' ? 'Mysore, Karnataka' : undefined,
     };
     await getStorage().setItem(STORAGE_KEY, JSON.stringify(user));
+    APIClient.setUser(user);
     set({ user, isAuthenticated: true });
     return { success: true };
   },
 
   logout: async () => {
     await getStorage().removeItem(STORAGE_KEY);
+    APIClient.setUser(null);
     set({ user: null, isAuthenticated: false });
   },
 
@@ -88,6 +95,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const stored = await getStorage().getItem(STORAGE_KEY);
       if (stored) {
         const user = JSON.parse(stored) as User;
+        APIClient.setUser(user);
         set({ user, isAuthenticated: true });
       }
     } catch (e) {
@@ -95,3 +103,4 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 }));
+

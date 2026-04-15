@@ -30,14 +30,11 @@ export type { Order, OrderItem, OrderAddress, PaymentMethod, OrderStatus } from 
 export { useAboutUsStore } from './store/useAboutUsStore';
 export type { AboutUsContent } from './store/useAboutUsStore';
 
-// ── Constants ──────────────────────────────────────────────────────
-export { MOCK_PRODUCTS } from './constants/products';
-export { ADMIN_ACCOUNTS, MOCK_FARMERS, MOCK_CONSUMERS } from './constants/admin';
-export { DEFAULT_ABOUT_CONTENT } from './constants/aboutUs';
-export { INITIAL_FARMER_LISTINGS, INITIAL_FARMER_ORDERS } from './constants/farmer';
+// ── API Client ─────────────────────────────────────────────────────
+export { default as APIClient } from './api/client';
 
 // ── Services ───────────────────────────────────────────────────────
-export { fetchFeaturedProducts, fetchAllProducts, fetchProductById } from './services/api';
+export { fetchFeaturedProducts, fetchAllProducts, fetchProductById, searchProducts } from './services/api';
 
 // ── Hooks ──────────────────────────────────────────────────────────
 export { useFeaturedProducts, useAllProducts, useProduct } from './hooks/useProducts';
