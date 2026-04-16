@@ -1,7 +1,7 @@
 export type ProductBadge = 'seasonal' | 'featured' | 'just_harvested' | 'bestseller' | 'new';
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   farmer: string;
   farmerId: string;

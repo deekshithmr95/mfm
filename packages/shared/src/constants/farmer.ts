@@ -28,10 +28,10 @@ export const AVAILABLE_IMAGES = [
 ];
 
 export const INITIAL_FARMER_LISTINGS: Product[] = [
-  { id: 101, name: 'Heirloom Tomatoes', farmer: 'My Farm', farmerId: 'me', image: '/tomatoes-basket.png', originalPrice: 120, offerPrice: 89, discountPercent: 26, stock: 45, category: 'Vegetables', unit: '1 kg', description: 'Vine-ripened heirloom tomatoes.' },
-  { id: 102, name: 'Farm Fresh Eggs', farmer: 'My Farm', farmerId: 'me', image: '/eggs-carton.png', originalPrice: 180, offerPrice: 149, discountPercent: 17, stock: 30, category: 'Dairy & Eggs', unit: '12 pcs', description: 'Free-range eggs.' },
-  { id: 103, name: 'Organic Spinach', farmer: 'My Farm', farmerId: 'me', image: '/turmeric.png', originalPrice: 45, offerPrice: 35, discountPercent: 22, stock: 20, category: 'Vegetables', unit: '500g', description: 'Fresh organic spinach.' },
-  { id: 104, name: 'Green Chillies', farmer: 'My Farm', farmerId: 'me', image: '/turmeric.png', originalPrice: 30, offerPrice: 25, discountPercent: 17, stock: 0, category: 'Vegetables', unit: '250g', description: 'Hot green chillies.' },
+  { id: '101', name: 'Heirloom Tomatoes', farmer: 'My Farm', farmerId: 'me', image: '/tomatoes-basket.png', originalPrice: 120, offerPrice: 89, discountPercent: 26, stock: 45, category: 'Vegetables', unit: '1 kg', description: 'Vine-ripened heirloom tomatoes.' },
+  { id: '102', name: 'Farm Fresh Eggs', farmer: 'My Farm', farmerId: 'me', image: '/eggs-carton.png', originalPrice: 180, offerPrice: 149, discountPercent: 17, stock: 30, category: 'Dairy & Eggs', unit: '12 pcs', description: 'Free-range eggs.' },
+  { id: '103', name: 'Organic Spinach', farmer: 'My Farm', farmerId: 'me', image: '/turmeric.png', originalPrice: 45, offerPrice: 35, discountPercent: 22, stock: 20, category: 'Vegetables', unit: '500g', description: 'Fresh organic spinach.' },
+  { id: '104', name: 'Green Chillies', farmer: 'My Farm', farmerId: 'me', image: '/turmeric.png', originalPrice: 30, offerPrice: 25, discountPercent: 17, stock: 0, category: 'Vegetables', unit: '250g', description: 'Hot green chillies.' },
 ];
 
 export const INITIAL_FARMER_ORDERS: FarmerOrder[] = [

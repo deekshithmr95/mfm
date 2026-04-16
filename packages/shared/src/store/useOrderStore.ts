@@ -12,7 +12,7 @@ export interface OrderAddress {
 }
 
 export interface OrderItem {
-  productId: number;
+  productId: string;
   name: string;
   image: string;
   farmer: string;
