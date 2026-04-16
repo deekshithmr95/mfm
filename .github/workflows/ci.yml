@@ -75,6 +75,8 @@ jobs:
           key: deps-${{ hashFiles('package-lock.json') }}
       - name: Build Next.js
         run: npm run build --workspace=frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://asia-south1-mysore-farmer-market.cloudfunctions.net/farmers-marketplace-api' }}
 
   # ─────────────────────────────────────────────────────────
   # Step 4: Run frontend tests
@@ -146,6 +148,8 @@ jobs:
 
       - name: Build Frontend
         run: npm run build --workspace=frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://asia-south1-mysore-farmer-market.cloudfunctions.net/farmers-marketplace-api' }}
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
