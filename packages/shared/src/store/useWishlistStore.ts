@@ -5,8 +5,8 @@ import { getStorage } from './storage';
 interface WishlistState {
   items: Product[];
   addToWishlist: (product: Product) => void;
-  removeFromWishlist: (productId: number) => void;
-  isInWishlist: (productId: number) => boolean;
+  removeFromWishlist: (productId: string) => void;
+  isInWishlist: (productId: string) => boolean;
   toggleWishlist: (product: Product) => void;
   hydrate: () => Promise<void>;
 }

@@ -133,18 +133,19 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'farmers' | 'consumers' | 'about'>('overview');
   const [viewingUser, setViewingUser] = useState<AdminUser | null>(null);
   const [search, setSearch] = useState('');
-  const [editAbout, setEditAbout] = useState(aboutContent || undefined);
+  const [editAbout, setEditAbout] = useState(aboutContent || {
+    heroTitle: '',
+    heroSubtitle: '',
+    mission: '',
+    story: '',
+    values: [],
+    teamMembers: [],
+  });
 
   useEffect(() => {
     fetchAllUsers();
     fetchAboutContent();
-  }, []);
-
-  useEffect(() => {
-    if (aboutContent) {
-      setEditAbout(aboutContent);
-    }
-  }, [aboutContent]);
+  }, [fetchAllUsers, fetchAboutContent]);
 
   const allUsers = useMemo(() => [...farmers, ...consumers], [farmers, consumers]);
 
@@ -341,7 +342,7 @@ export default function AdminDashboard() {
           )}
 
           {/* ===== ABOUT US MANAGEMENT ===== */}
-          {activeTab === 'about' && (
+          {activeTab === 'about' && editAbout && (
             <div className={styles.aboutEditor}>
               <h2 className={styles.sectionTitle}>Manage About Us Page</h2>
               <p className={styles.aboutNote}>Changes made here will update the public About Us page in real-time.</p>
@@ -349,7 +350,7 @@ export default function AdminDashboard() {
               <div className={styles.aboutForm}>
                 <div className={styles.aboutField}>
                   <label>Hero Title</label>
-                  <input type="text" value={editAbout.heroTitle} onChange={(e) => setEditAbout({ ...editAbout, heroTitle: e.target.value })} />
+                  <input type="text" value={editAbout.heroTitle || ''} onChange={(e) => setEditAbout({ ...editAbout, heroTitle: e.target.value })} />
                 </div>
                 <div className={styles.aboutField}>
                   <label>Hero Subtitle</label>

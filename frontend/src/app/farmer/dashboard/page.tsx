@@ -214,7 +214,7 @@ export default function FarmerDashboard() {
   useEffect(() => {
     fetchListings();
     fetchOrders();
-  }, []);
+  }, [fetchListings, fetchOrders]);
 
   const totalSales = orders.reduce((t, o) => t + o.total, 0);
   const activeListings = listings.filter((l) => l.stock > 0).length;
