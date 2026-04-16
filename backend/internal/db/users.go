@@ -40,7 +40,7 @@ func ListUsersByRole(ctx context.Context, role string) ([]models.User, error) {
 	iter := client.Collection(CollectionUsers).Where("role", "==", role).Documents(ctx)
 	defer iter.Stop()
 
-	var users []models.User
+	users := []models.User{}
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -65,7 +65,7 @@ func ListAllUsers(ctx context.Context) ([]models.User, error) {
 	iter := client.Collection(CollectionUsers).Documents(ctx)
 	defer iter.Stop()
 
-	var users []models.User
+	users := []models.User{}
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {

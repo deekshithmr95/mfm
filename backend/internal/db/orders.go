@@ -46,7 +46,7 @@ func ListCustomerOrders(ctx context.Context, customerID string) ([]models.Order,
 	iter := client.Collection(CollectionOrders).Where("customerId", "==", customerID).Documents(ctx)
 	defer iter.Stop()
 
-	var orders []models.Order
+	orders := []models.Order{}
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -71,7 +71,7 @@ func ListAllOrders(ctx context.Context) ([]models.Order, error) {
 	iter := client.Collection(CollectionOrders).Documents(ctx)
 	defer iter.Stop()
 
-	var orders []models.Order
+	orders := []models.Order{}
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
