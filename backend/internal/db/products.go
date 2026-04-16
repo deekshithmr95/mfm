@@ -57,7 +57,7 @@ func ListProducts(ctx context.Context, category string) ([]models.Product, error
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
-	var products []models.Product
+	products := []models.Product{}
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -89,7 +89,7 @@ func SearchProducts(ctx context.Context, query, category, sortBy string) ([]mode
 	// Filter by search query
 	if query != "" {
 		q := strings.ToLower(query)
-		var filtered []models.Product
+		filtered := []models.Product{}
 		for _, p := range products {
 			if strings.Contains(strings.ToLower(p.Name), q) ||
 				strings.Contains(strings.ToLower(p.FarmerName), q) ||
@@ -131,7 +131,7 @@ func ListFarmerProducts(ctx context.Context, farmerID string) ([]models.Product,
 	iter := client.Collection(CollectionProducts).Where("farmerId", "==", farmerID).Documents(ctx)
 	defer iter.Stop()
 
-	var products []models.Product
+	products := []models.Product{}
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
