@@ -21,7 +21,20 @@ const BADGE_LABELS: Record<string, string> = {
 
 export default function ProductDetail() {
   const params = useParams();
-  const id = params.id ? (typeof params.id === 'string' ? params.id : String(params.id)) : '';
+  
+  // Next.js static export fallback passes "0" on direct loads.
+  // Get real ID from window.location if it's "0"
+  let resolvedId = params.id ? (typeof params.id === 'string' ? params.id : String(params.id)) : '';
+  
+  if (resolvedId === '0' && typeof window !== 'undefined') {
+    const pathParts = window.location.pathname.split('/');
+    const realId = pathParts[pathParts.length - 1];
+    if (realId && realId !== '0') {
+      resolvedId = realId;
+    }
+  }
+  
+  const id = resolvedId;
 
   const { data: product, isLoading } = useProduct(id);
   const { data: allProducts } = useAllProducts();
