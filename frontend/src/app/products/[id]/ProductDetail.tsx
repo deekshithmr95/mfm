@@ -9,7 +9,7 @@ import { useWishlistStore } from '@/store/useWishlistStore';
 import { useToastStore } from '@/store/useToastStore';
 import ProductCard from '@/components/ProductCard';
 import styles from './product-detail.module.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const BADGE_LABELS: Record<string, string> = {
   seasonal: '🍂 Seasonal Pick',
@@ -21,7 +21,16 @@ const BADGE_LABELS: Record<string, string> = {
 
 export default function ProductDetail() {
   const params = useParams();
-  const id = typeof params.id === 'string' ? params.id : String(params.id);
+  const [id, setId] = useState<string>('');
+  
+  // Ensure we have the correct ID from the URL
+  useEffect(() => {
+    if (params.id) {
+      const newId = typeof params.id === 'string' ? params.id : String(params.id);
+      setId(newId);
+    }
+  }, [params.id]);
+
   const { data: product, isLoading } = useProduct(id);
   const { data: allProducts } = useAllProducts();
   const addToCart = useCartStore((s) => s.addToCart);
@@ -30,7 +39,10 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [now] = useState(() => Date.now());
 
-  if (isLoading) {
+  // Show loading while waiting for ID or data to load
+  const isInitializing = !id || isLoading;
+
+  if (isInitializing) {
     return (
       <div className={styles.page}>
         <div className="container">

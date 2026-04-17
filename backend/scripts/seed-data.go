@@ -3,7 +3,7 @@
 //
 // Usage:
 //   set FIRESTORE_EMULATOR_HOST=localhost:8080
-//   set GCP_PROJECT_ID=mysore-farmer-marketplace
+//   set GCP_PROJECT_ID=mysore-farmer-market
 //   go run scripts/seed-data.go
 
 package main
@@ -20,7 +20,7 @@ import (
 func main() {
 	projectID := os.Getenv("GCP_PROJECT_ID")
 	if projectID == "" {
-		projectID = "mysore-farmer-marketplace"
+		projectID = "mysore-farmer-market"
 	}
 
 	ctx := context.Background()
