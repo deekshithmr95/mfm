@@ -6,7 +6,7 @@ import { useCartStore } from '../../src/store/useCartStore';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: product, isLoading } = useProduct(Number(id));
+  const { data: product, isLoading } = useProduct(id);
   const { addToCart } = useCartStore();
 
   if (isLoading || !product) {
